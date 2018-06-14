@@ -8,21 +8,20 @@ function iniciar(){
 		res.writeHead(200);
 		var video = videos.filter(function(m){
 			return m.title === req.params.videoId
-		})[0];
-	
-
+		})[0];	
 	if (!video){
 		res.send(404);
 	}
 	else{
 		res.end(video.year);
+		console.log('Su solicitud es %s', video.year);
 	}
-
 });
 	var server = app.listen(8080, function(){
 		var port = server.address().port
 		console.log('Servidor es: %s', port)
 	})
+
 }
 
 exports.iniciar = iniciar
