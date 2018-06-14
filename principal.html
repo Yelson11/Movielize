@@ -1,32 +1,20 @@
 <!DOCTYPE HTML>
 <html lang = "en">
   <head>
-    <title>formDemo.html</title>
+    <title>principal.html</title>
     <meta charset = "UTF-8" />
   </head>
   <body>
-    <h1>Form Demo</h1>
+    <h1>Movielize</h1>
     <form>
       <fieldset>
-        <legend>Text input</legend>
         <p>
-          <label>Text box</label>
-          <input type = "text"
-                 id = "myText"
-                 value = "text here" />
+          <label>Ingrese los criterios de búsqueda: </label>
         </p>
         <p>
-          <label>Password</label>
-          <input> type = "password"
-                  id = "myPwd"
-                  value = "secret" />
+          <textarea style="width:800px; height:100px;"></textarea>
         </p>
-        <p>
-          <label>Text Area</label>
-          <textarea> id = "myTextArea"
-                  rows = "3"
-                  cols = "80">Your text here</textarea>
-        </p>
+         <input type="button" value="Buscar" onclick="window.location.href='result.html';"/>
       </fieldset>
     </form>
   </body>
