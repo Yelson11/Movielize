@@ -1,40 +1,12 @@
-var express = require('express');
-
-var videos = require("./videosdb"); 
-
-function iniciar(){
-	var app = express();
-	app.get('/video/:videoId', function(req, res){
-		res.writeHead(200);
-		var video = videos.filter(function(m){
-			return m.title === req.params.videoId
-		})[0];	
-	if (!video){
-		res.send(404);
-	}
-	else{
-		res.end(video.year);
-		console.log('Su solicitud es %s', video.year);
-	}
-});
-	var server = app.listen(8080, function(){
-		var port = server.address().port
-		console.log('Servidor es: %s', port)
-	})
-
-}
-
-exports.iniciar = iniciar
-
-/*
 var http = require('http');
+var fs = require('fs');
 
-http.createServer(function(request, response){
-	response.writeHead(200);
-	response.write('hola');
-	response.end();
-}).listen(8080, function(){
-	console.log('dddddddddddddd');
+var server = http.createServer(function(req, res){
+	console.log('request was made: ' + req.url);
+	res.writeHead(200, {'Content-Type': 'text/html'});
+	var myReadStream = fs.createReadStream(__dirname + '/principal.html', 'utf8');
+	myReadStream.pipe(res);
 });
 
-*/
+server.listen(3000, '127.0.0.1');
+console.log('Yelson');
