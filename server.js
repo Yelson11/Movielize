@@ -1,40 +1,32 @@
-var express = require('express');
-
-var videos = require("./videosdb"); 
-
-function iniciar(){
-	var app = express();
-	app.get('/video/:videoId', function(req, res){
-		res.writeHead(200);
-		var video = videos.filter(function(m){
-			return m.title === req.params.videoId
-		})[0];	
-	if (!video){
-		res.send(404);
+var http = require("http"),
+ fs = require ("fs");
+ 
+  
+http.createServer(function (req, res){
+    
+    if (req.url.indexOf("favicon.ico") > 0) {return;}
+	fs.readFile("./index.html", function(err,html){
+	
+	var html_string = html.toString ();
+	var arreglo_parametros = [], parametros= {} ;
+	var variables=html_string.match((/[^\{\}]+(?=\})/g));
+	var nombre ="";
+	if (req.url.indexOf("?") > 0 ){
+		var url_data = req.url.split("?");
+		var arreglo_parametros = url_data[1].split("&");
 	}
-	else{
-		res.end(video.year);
-		console.log('Su solicitud es %s', video.year);
+	for (var i = arreglo_parametros.length - 1; i >= 0; i--) {
+		var parametro = arreglo_parametros[i];
+		var param_data = parametro.split("=");
+		parametros[param_data[0]] = param_data[1];
 	}
-});
-	var server = app.listen(8080, function(){
-		var port = server.address().port
-		console.log('Servidor es: %s', port)
-	})
-
-}
-
-exports.iniciar = iniciar
-
-/*
-var http = require('http');
-
-http.createServer(function(request, response){
-	response.writeHead(200);
-	response.write('hola');
-	response.end();
-}).listen(8080, function(){
-	console.log('dddddddddddddd');
-});
-
-*/
+	for (var i = variables.length - 1; i >= 0; i--) {
+	 	var variable = variables[i];
+	 	html_string = html_string.replace("{"+variables[i]+"}", parametros [variable]);
+	}
+	console.log(parametros[variable]);
+	res.writeHead (200, {"Content-Type":"text/html"})
+	res.write(html_string);
+	res.end();
+	}); 
+}).listen (8080);﻿
