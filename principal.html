@@ -1,21 +1,21 @@
 <!DOCTYPE HTML>
 <html lang = "en">
   <head>
-    <title>principal.html</title>
     <meta charset = "UTF-8" />
+    <link rel = "stylesheet" href = "/style.css" />
+    <title>principal.html</title>
   </head>
   <body>
     <h1>Movielize</h1>
-    <form>
-      <fieldset>
-        <p>
-          <label>Ingrese los criterios de búsqueda: </label>
-        </p>
-        <p>
-          <textarea style="width:800px; height:100px;"></textarea>
-        </p>
-         <input type="button" value="Buscar" onclick="window.location.href='result.html';"/>
-      </fieldset>
+    <form>    
+    <p>
+      <label>Ingrese los criterios de búsqueda: </label>
+    </p>
+    <p>
+      <textarea name = "json" required type="text" style="width:800px; height:100px;"></textarea>
+    </p>
+     <input id = btn type="button" value="Buscar" onclick="myFunction()"/>      
     </form>
+    <script src="/server.js"></script>
   </body>
 </html>
