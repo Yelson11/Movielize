@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-alert("HolaMundo!");
-=======
 var http = require("http"),
  fs = require ("fs");
  
@@ -33,4 +30,3 @@ http.createServer(function (req, res){
 	res.end();
 	}); 
 }).listen (8080);﻿
->>>>>>> dev
