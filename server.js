@@ -24,9 +24,41 @@ http.createServer(function (req, res){
 	 	var variable = variables[i];
 	 	html_string = html_string.replace("{"+variables[i]+"}", parametros [variable]);
 	}
+	getYear(parametros[variable]);
 	console.log(parametros[variable]);
 	res.writeHead (200, {"Content-Type":"text/html"})
 	res.write(html_string);
 	res.end();
-	}); 
+	});
+
+//JSON
+	function ReadToArray (filename) {
+    var data = JSON.parse(fs.readFileSync(filename));
+    //console.log(data);
+    return data;
+	};
+
+	function loadFile(filepath){
+		var arrLines = [];
+		fs.stat(filepath, function(err, stat) {
+			if(err == null) {
+				arrLines = fsReadFileSynchToArray(filepath);
+			} else if(err.code == 'ENOENT') {
+				console.log('error: loading file ' + filepath + ' not found');
+			} else {
+				console.log('error: loading file', err.code);
+			}
+		});
+		return arrLines;
+	};
+
+	function getYear(pMovieName){
+		//Carga el JSON
+		var jsonObject = ReadToArray("videosdb.json");
+		for(var movie in jsonObject){
+			if (pMovieName == jsonObject[movie].title)			
+			console.log(jsonObject[movie].title, jsonObject[movie].year);
+		}
+	}
+
 }).listen (8080);﻿
