@@ -1,5 +1,9 @@
 [{"title":"After Dark in Central Park","year":1910,"director":null,"cast":null,"genre":null,"notes":null},
+<<<<<<< HEAD
 	{"title":"Boarding School Girls' Pajama Parade","year":"1900","director":null,"cast":null,"genre":null,"notes":null},
+=======
+	{"title":"Boarding School Girls' Pajama Parade","year":1900,"director":null,"cast":null,"genre":null,"notes":null},
+>>>>>>> dev
 	{"title":"Buffalo Bill's Wild West Parad","year":1900,"director":null,"cast":null,"genre":null,"notes":null},
 	{"title":"Caught","year":1900,"director":null,"cast":null,"genre":null,"notes":null},
 	{"title":"Clowns Spinning Hats","year":1900,"director":null,"cast":null,"genre":null,"notes":null},
