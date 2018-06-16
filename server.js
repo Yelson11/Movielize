@@ -28,8 +28,9 @@ http.createServer(function (req, res){
 	if (respuesta != null){
 		var respuesta = replaceAll(parametros[variable], "+", " ");
 		respuesta = preparateJSON(respuesta);
+		//var r = JSON.parse(respuesta);
 		var j = ReadToArray("chartData.json");
-		console.log(search(respuesta, j));
+		//console.log(search(r, j));
 	}	
 	res.writeHead (200, {"Content-Type":"text/html"})
 	res.write(html_string);
@@ -93,13 +94,14 @@ http.createServer(function (req, res){
 	};
 
 	function search(pJsonSearch, jsonObject){
-		var jsonResult = [{title: null}];
+		var jsonResult = {title: null};
 		for (var indexMovie in jsonObject){
 			if (jsonObject[indexMovie].title == pJsonSearch.title){
-				var newValue = pJsonSearch.title;
+
+			}
+			var newValue = pJsonSearch.title;
 				console.log(newValue);
 				jsonResult.title = newValue;
-			}
 		}
 		return jsonResult;
 	};
