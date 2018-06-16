@@ -3,7 +3,6 @@ var http = require("http"),
  
   
 http.createServer(function (req, res){
-    
     if (req.url.indexOf("favicon.ico") > 0) {return;}
 	fs.readFile("./index.html", function(err,html){
 	
@@ -24,8 +23,15 @@ http.createServer(function (req, res){
 	 	var variable = variables[i];
 	 	html_string = html_string.replace("{"+variables[i]+"}", parametros [variable]);
 	}
-	getYear(parametros[variable]);
-	console.log(parametros[variable]);
+
+	var respuesta = parametros[variable];
+	if (respuesta != null){
+		var respuesta = replaceAll(parametros[variable], "+", " ");
+		respuesta = preparateJSON(respuesta);
+	}
+
+	getYear(respuesta);	
+	console.log(respuesta);
 	res.writeHead (200, {"Content-Type":"text/html"})
 	res.write(html_string);
 	res.end();
@@ -55,10 +61,36 @@ http.createServer(function (req, res){
 	function getYear(pMovieName){
 		//Carga el JSON
 		var jsonObject = ReadToArray("videosdb.json");
-		for(var movie in jsonObject){
-			if (pMovieName == jsonObject[movie].title)			
-			console.log(jsonObject[movie].title, jsonObject[movie].year);
+		for(var indexMovie in jsonObject){
+			if (pMovieName == jsonObject[indexMovie].title)			
+			console.log(jsonObject[indexMovie].title, jsonObject[indexMovie].year);
 		}
 	}
+
+	function replaceAll(pString, pFind, pReplace){
+    	var result = pString.split(pFind).join(pReplace);
+    	return result;
+	}
+
+	function preparateJSON(pString){
+		var result = pString.split("+").join(" ");
+		result = result.split("%7D").join("}");
+		result = result.split("%5B").join("[");
+		result = result.split("%5D").join("]");
+		result = result.split("%3A").join(":");
+		result = result.split("%22").join('"');
+		result = result.split("%2C").join(",");
+		result = result.split("%7B").join("{");
+		result = result.split("%27").join("'");
+		result = result.split("%2F").join("/");
+		result = result.split("%5C").join("/");
+		result = result.split("%3F").join("?");
+		result = result.split("%BF").join("¿");
+		result = result.split("%2B").join("+");
+		result = result.split("%26").join("&");
+		result = result.split("%21").join("!");
+		result = result.split("%A1").join("¡");
+		return result;
+	};
 
 }).listen (8080);﻿
