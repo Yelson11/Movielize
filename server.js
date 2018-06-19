@@ -42,13 +42,13 @@ app.get('/search', function(req, res){
 	//console.log(memory.getItem(publicKey));
 	//var privateKey = search(); se usa la llave publica para generar la privada
 	//res.send("Su llave pública es: " + publicKey);
- 	res.sendFile(path.join(__dirname + '/chartBase.html'));	
+ 	res.sendFile(path.join(__dirname + '/prueba.html'));	
 });
 
 app.get('/viewchart', function(req, res){ 
 	var x = req.query.llave;
 	//getHash(x)
- 	res.sendFile(path.join(__dirname + '/principal.html'));	
+ 	res.sendFile(path.join(__dirname + '/chart.html'));	
 });
 
 function preparateJSONsearch(pTitle, pGenre, pActor, pStar, pEnd){
