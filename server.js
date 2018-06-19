@@ -37,11 +37,10 @@ app.get('/search', function(req, res){
 	var jEnd   = req.query.fin;
 	var json = preparateJSONsearch(jTitle, jGenre, jActor, jStar, jEnd);
 	var strJson = JSON.stringify(json);
-	console.log(strJson);
-	var publicKey = encrypt(strJson);
-	console.log(publicKey);
-	memory.setItem(publicKey, json);
-	//var privateKey = search();
+	var publicKey = encrypt(strJson, key);
+	//memory.setItem(publicKey, json);
+	//console.log(memory.getItem(publicKey));
+	//var privateKey = search(); se usa la llave publica para generar la privada
 	//res.send("Su llave pública es: " + publicKey);
  	res.sendFile(path.join(__dirname + '/principal.html'));	
 });
@@ -195,13 +194,13 @@ function HashTable(obj)
 	};
 
 //|------------------------------- ENCRIPTADO -------------------------------|
-function encrypt(pJson){
-	var enc = crypto.createCipher("aes-256-ctr", key).update(pJson, "utf-8", "hex");
+function encrypt(pJson, pKey){
+	var enc = crypto.createCipher("aes-256-ctr", pKey).update(pJson, "utf-8", "hex");
 	return enc;
 };
 
 function desencrypt(pJson){
-	var desenc = crypto.createDecipher("aes-256-ctr", key).update(pJson, "hex", "utf-8");
+	var desenc = crypto.createDecipher("aes-256-ctr", pKey).update(pJson, "hex", "utf-8");
 	return desenc;
 };
 
