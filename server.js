@@ -38,6 +38,7 @@ app.use(express.static("D:\\Users\\Yelson\\Documents\\JS Projects\\Movilize"));
 app.get('/search', function(req, res){ 
 	//Hay que hacerle el get de la busqueda y mandarle al algoritmo
 	var jTitle = req.query.nombre;
+	console.log(jTitle);
 	var jGenre = req.query.genero;
 	var jActor = req.query.actores;
 	var jStar  = req.query.inicio;
@@ -46,18 +47,16 @@ app.get('/search', function(req, res){
 	//Para hacer la busqueda
 	var json = preparateJSONsearch(jTitle, jGenre, jActor, jStar, jEnd);
 	var result = searchMovie(yearsHash, json.star, json.end, json.title, json.genre, json.actor);
-	for (i in result){
-		//console.log(result[i]);
-	}
 	//Para encriptar
-	console.log(result);
+	preparateJSONchart(result);
+//	console.log(result);
 	var strJson   = JSON.stringify(json);
 	var strResult = JSON.stringify(result);
 	var publicKey = encrypt(strJson, key);
 	var privateKey = encrypt(strResult, publicKey);
-	console.log("Encriptado:");
-	console.log("Public Key: " + publicKey);
-	console.log("Private Key: " + privateKey);
+//	console.log("Encriptado:");
+//	console.log("Public Key: " + publicKey);
+//	console.log("Private Key: " + privateKey);
 	if (!memory.hasItem(publicKey)){
 		memory.setItem(publicKey, privateKey);
 	}
@@ -70,10 +69,16 @@ app.get('/viewchart', function(req, res){
 	var publicKey = '' + key;
 	var privateKey = memory.getItem(publicKey);
 	console.log(memory.getItem(publicKey));
-	var json = desencrypt(privateKey, key);
-	console.log("Desencriptada: " + json);
+	//var json = desencrypt(privateKey, key);
+//	console.log("Desencriptada: " + json);
  	res.sendFile(path.join(__dirname + '/chart.html'));	
 });
+
+function preparateJSONchart(pMovieList){
+	for (movie in pMovieList){
+		console.log(pMovieList[movie]);
+	}
+};
 
 function preparateJSONsearch(pTitle, pGenre, pActor, pStar, pEnd){
 	var jTitle = pTitle;
@@ -187,7 +192,7 @@ function preparateJSONsearch(pTitle, pGenre, pActor, pStar, pEnd){
 				for (indexMovieName in listMovieName)
 				{
 					movieName = pListMovies[indexMovie].title.toLowerCase();
-					if (movieName.indexOf(listMovieName[indexMovieName]) > 0 && !lista.includes(pListMovies[indexMovie])){
+					if (movieName.indexOf(listMovieName[indexMovieName]) > -1 && !lista.includes(pListMovies[indexMovie])){
 						lista.push(pListMovies[indexMovie]);
 					}	
 				}
@@ -206,7 +211,7 @@ function preparateJSONsearch(pTitle, pGenre, pActor, pStar, pEnd){
 				{
 					if (pListMovies[indexMovie].cast != null){
 						movieCast = pListMovies[indexMovie].cast.toLowerCase();
-						if (movieCast.indexOf(listMovieCast[indexMovieCast]) > 0 && !lista.includes(pListMovies[indexMovie])){
+						if (movieCast.indexOf(listMovieCast[indexMovieCast]) > -1 && !lista.includes(pListMovies[indexMovie])){
 							lista.push(pListMovies[indexMovie]);
 						}
 					}	
