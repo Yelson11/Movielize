@@ -8,11 +8,9 @@ var bodyParser = require('body-parser');
 var path = require('path');
 //Para encriptar
 var crypto = require("crypto");
-var key = "KeylaSanchez";
+var key = "D10S";
 //El hashtable
 var memory = new HashTable();
-
-
 
 // constante para definir el puerto a ser usado
 var PORT_NUMBER = 8080;
@@ -43,8 +41,6 @@ app.get('/search', function(req, res){
 	var publicKey = encrypt(strJson);
 	console.log(publicKey);
 	memory.setItem(publicKey, json);
-	//Hacer la función del hash
-	//codificar el json
 	//var privateKey = search();
 	//res.send("Su llave pública es: " + publicKey);
  	res.sendFile(path.join(__dirname + '/principal.html'));	
@@ -52,13 +48,7 @@ app.get('/search', function(req, res){
 
 app.get('/viewchart', function(req, res){ 
 	var x = req.query.llave;
-	var c = encrypt(x);
-	var d = desencrypt(c);
-	console.log("Encriptado:" , c);
-	console.log("Desencriptado:" , d);
-	//Hacer la función del hash
-	//codificar el json
-
+	//getHash(x)
  	res.sendFile(path.join(__dirname + '/principal.html'));	
 });
 
