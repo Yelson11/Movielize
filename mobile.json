@@ -1,0 +1,17 @@
+{
+ "name": "flare",
+ "children": [
+  {
+   "name": "analytics",
+   "children": [
+    {
+     "name": "cluster",
+     "children": [
+      {"name": "Smartphone Sales", "size": 11111},
+  {"name": "Smartphone Salesa", "size": 2111}
+     ]
+    }
+   ]
+  }
+ ]
+}
