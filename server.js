@@ -9,8 +9,15 @@ var path = require('path');
 //Para encriptar
 var crypto = require("crypto");
 var key = "D10S";
+var fs = require("fs");
+
 //El hashtable
 var memory = new HashTable();
+
+var yearsHash = createHash();
+//	for (i in list){
+//		console.log(list[i]);
+//	}
 
 // constante para definir el puerto a ser usado
 var PORT_NUMBER = 8080;
@@ -35,19 +42,36 @@ app.get('/search', function(req, res){
 	var jActor = req.query.actores;
 	var jStar  = req.query.inicio;
 	var jEnd   = req.query.fin;
+
+	//Para hacer la busqueda
 	var json = preparateJSONsearch(jTitle, jGenre, jActor, jStar, jEnd);
-	var strJson = JSON.stringify(json);
+	var result = searchMovie(yearsHash, json.star, json.end, json.title, json.genre, json.actor);
+	for (i in result){
+		//console.log(result[i]);
+	}
+	//Para encriptar
+	console.log(result);
+	var strJson   = JSON.stringify(json);
+	var strResult = JSON.stringify(result);
 	var publicKey = encrypt(strJson, key);
-	//memory.setItem(publicKey, json);
-	//console.log(memory.getItem(publicKey));
-	//var privateKey = search(); se usa la llave publica para generar la privada
+	var privateKey = encrypt(strResult, publicKey);
+	console.log("Encriptado:");
+	console.log("Public Key: " + publicKey);
+	console.log("Private Key: " + privateKey);
+	if (!memory.hasItem(publicKey)){
+		memory.setItem(publicKey, privateKey);
+	}
 	//res.send("Su llave pública es: " + publicKey);
  	res.sendFile(path.join(__dirname + '/prueba.html'));	
 });
 
 app.get('/viewchart', function(req, res){ 
-	var x = req.query.llave;
-	//getHash(x)
+	var key = req.query.llave;
+	var publicKey = '' + key;
+	var privateKey = memory.getItem(publicKey);
+	console.log(memory.getItem(publicKey));
+	var json = desencrypt(privateKey, key);
+	console.log("Desencriptada: " + json);
  	res.sendFile(path.join(__dirname + '/chart.html'));	
 });
 
@@ -83,8 +107,118 @@ function preparateJSONsearch(pTitle, pGenre, pActor, pStar, pEnd){
     };
     return data;
 };
+//|--------------------------------------------------------------------------|
 
-function HashTable(obj)
+	function ReadToArray (filename) {
+    var data = JSON.parse(fs.readFileSync(filename));
+    	return data;
+	};
+
+	function createHash(){
+		var yearsHash = new HashTable();
+		var jsonObject = ReadToArray("videosdb.json");
+		for(var indexMovie in jsonObject){
+			if (jsonObject[indexMovie].genre != null){
+				var listGenre = commaSplit(jsonObject[indexMovie].genre);
+				for (var indexGenre in listGenre){
+					yearsHash.setItemYear(jsonObject[indexMovie].year, listGenre[indexGenre].toLowerCase(), jsonObject[indexMovie]);	
+				}				
+			}
+			else{
+				yearsHash.setItemYear(jsonObject[indexMovie].year, "null", jsonObject[indexMovie]);
+			}
+		}
+		return yearsHash;
+	}
+
+	function commaSplit(pString){
+		var listWords = [];
+		if (pString.indexOf(',') > 0){
+			listWords = pString.split(", ");
+		}
+		else{ 
+			listWords.push(pString);
+		}
+		return listWords;
+	}
+
+	function searchMovie(pYearsHash, pStart, pFinal, pName, pGenre, pCast){
+		var listMovieName = [];
+		var listMovieCast = [];
+	    for (var indexYear = pStart; indexYear <= pFinal; indexYear++) {
+            //console.log(indexYear);
+            if (pGenre != 'null'){
+		        listGenre = commaSplit(pGenre);
+		        for (var indexGenre in listGenre) { //itera sobre los generos de cada año
+		        	genre = listGenre[indexGenre].toLowerCase();
+		        	if (pYearsHash.items[indexYear].hasItem(genre)){
+		        		var listMovieNode = pYearsHash.items[indexYear].items[genre];
+		        		listMovieName = searchMovieName(pYearsHash.items[indexYear].items[genre], pName.toLowerCase(), listMovieName);
+		        		listMovieCast = searchMovieCast(listMovieNode, pCast.toLowerCase(), listMovieCast);
+		        	}
+		    	}
+		    }
+		    else{
+		    	for (var indexGenre in pYearsHash.items[indexYear].items) { //itera sobre los generos de cada año
+		        	var listMovieNode = pYearsHash.items[indexYear].items[indexGenre];
+		        	listMovieName = searchMovieName(pYearsHash.items[indexYear].items[indexGenre], pName.toLowerCase(), listMovieName);
+		        	listMovieCast = searchMovieCast(listMovieNode, pCast.toLowerCase(), listMovieCast);
+		    	}
+		    }
+	    }
+	    listMovie = intersectionMovies(listMovieName, listMovieCast);
+	    return listMovie;
+	}
+
+	function intersectionMovies(pListMovieName, pListMovieCast){
+		var listMovies = []; 
+		for (var indexMovie in pListMovieName) {
+			if (pListMovieCast.includes(pListMovieName[indexMovie])) {
+				listMovies.push(pListMovieName[indexMovie]);	
+			}
+		}
+		return listMovies;
+	}
+
+	function searchMovieName(pListMovies, pListMoviesName, lista){
+		for (var indexMovie in pListMovies) {
+			if (pListMoviesName != 'null'){
+				listMovieName = commaSplit(pListMoviesName);
+				for (indexMovieName in listMovieName)
+				{
+					movieName = pListMovies[indexMovie].title.toLowerCase();
+					if (movieName.indexOf(listMovieName[indexMovieName]) > 0 && !lista.includes(pListMovies[indexMovie])){
+						lista.push(pListMovies[indexMovie]);
+					}	
+				}
+			}
+			else
+				lista.push(pListMovies[indexMovie]);
+		}
+		return lista;
+	}	
+
+	function searchMovieCast(pListMovies, pActor, lista){
+		for (var indexMovie in pListMovies) {		
+			if (pActor != 'null'){
+				listMovieCast = commaSplit(pActor);		
+				for (indexMovieCast in listMovieCast)
+				{
+					if (pListMovies[indexMovie].cast != null){
+						movieCast = pListMovies[indexMovie].cast.toLowerCase();
+						if (movieCast.indexOf(listMovieCast[indexMovieCast]) > 0 && !lista.includes(pListMovies[indexMovie])){
+							lista.push(pListMovies[indexMovie]);
+						}
+					}	
+				}
+			}
+			else
+				lista.push(pListMovies[indexMovie]);
+		}
+		return lista;
+	}
+
+	function HashTable(obj)
 	{
 		this.length = 0;
 		this.items = {};
@@ -94,6 +228,7 @@ function HashTable(obj)
 		        this.length++;
 		    }
 		}
+
 
 		this.setItem = function(key, value)
 		{
@@ -110,88 +245,42 @@ function HashTable(obj)
 		    return previous;
 		}
 
-		this.getItem = function(key) {
-		    return this.hasItem(key) ? this.items[key] : undefined;
-		}
-
 		this.hasItem = function(key)
 		{
 		    return this.items.hasOwnProperty(key);
 		}
 
-		this.removeItem = function(key)
+		this.setItemYear = function(key, value, pMovie)
 		{
-		    if (this.hasItem(key)) {
+			var genreHash = new HashTable();
+			var previous = undefined;
+		    if (this.hasItemYear(key)) 
+		    {
 		        previous = this.items[key];
-		        this.length--;
-		        delete this.items[key];
-		        return previous;
 		    }
-		    else {
-		        return undefined;
+		    else 
+		    {
+		    	this.items[key] = genreHash;
+		        this.length++;
 		    }
+		   	this.items[key].setItem(value, pMovie);
+		    return previous;
 		}
 
+		this.getItem = function(key) {
+		    return this.hasItem(key) ? this.items[key] : undefined;
+		}
 
-		this.imprimirKeys = function()
+		this.getItemYears = function(key) {
+		    return this.hasItemYear(key) ? this.items[key] : undefined;
+		}
+
+		this.hasItemYear = function(key)
 		{
-		    var keys = [];
-		    for (var k in this.items) {
-		        if (this.hasItem(k)) {
-		            console.log(k);
-		            console.log(this.items[k]);
-		        }
-		    }
-		    return keys;
+		    return this.items.hasOwnProperty(key);
 		}
 
-		this.keys = function()
-		{
-		    var keys = [];
-		    for (var k in this.items) {
-		        if (this.hasItem(k)) {
-		            keys.push(k);
-		        }
-		    }
-		    return keys;
-		}
-
-		this.imprimirValues = function()
-		{
-		    var values = [];
-		    for (var k in this.items) {
-		        if (this.hasItem(k)) {
-		            console.log(this.items[k]);
-		        }
-		    }
-		}
-
-		this.values = function()
-		{
-		    var values = [];
-		    for (var k in this.items) {
-		        if (this.hasItem(k)) {
-		            values.push(this.items[k]);
-		            console.log(this.items[k])
-		        }
-		    }
-		    return values;
-		}
-
-		this.each = function(fn) {
-		    for (var k in this.items) {
-		        if (this.hasItem(k)) {
-		            fn(k, this.items[k]);
-		        }
-		    }
-		}
-
-		this.clear = function()
-		{
-		    this.items = {}
-		    this.length = 0;
-		}
-	};
+	}
 
 //|------------------------------- ENCRIPTADO -------------------------------|
 function encrypt(pJson, pKey){
@@ -199,7 +288,7 @@ function encrypt(pJson, pKey){
 	return enc;
 };
 
-function desencrypt(pJson){
+function desencrypt(pJson, pKey){
 	var desenc = crypto.createDecipher("aes-256-ctr", pKey).update(pJson, "hex", "utf-8");
 	return desenc;
 };
