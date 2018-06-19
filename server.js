@@ -48,7 +48,7 @@ app.get('/search', function(req, res){
 	var json = preparateJSONsearch(jTitle, jGenre, jActor, jStar, jEnd);
 	var result = searchMovie(yearsHash, json.star, json.end, json.title, json.genre, json.actor);
 	//Para encriptar
-	preparateJSONchart(result);
+	var jsonChart = preparateJSONchart(result);
 //	console.log(result);
 	var strJson   = JSON.stringify(json);
 	var strResult = JSON.stringify(result);
@@ -74,10 +74,28 @@ app.get('/viewchart', function(req, res){
  	res.sendFile(path.join(__dirname + '/chart.html'));	
 });
 
-function preparateJSONchart(pMovieList){
-	for (movie in pMovieList){
-		console.log(pMovieList[movie]);
+function isInJSON(pKey, pJson){
+	console.log(pJson);
+	if(typeof pJson.pKey == "undefined"){
+    	return false;
 	}
+}
+
+function preparateJSONchart(pMovieList){
+	var jsonObj = {
+	};
+	for (movie in pMovieList){
+		var jGenre = pMovieList[movie].genre; 
+		if(isInJSON(jGenre, pMovieList)){
+			jsonObj.jGenre += 1;
+		}
+		else{
+			jsonObj[jGenre] = 1;
+		}
+		console.log(pMovieList[movie].genre);
+	}
+
+	return jsonObj;
 };
 
 function preparateJSONsearch(pTitle, pGenre, pActor, pStar, pEnd){

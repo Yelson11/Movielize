@@ -1,37 +1,33 @@
-var datos = [10,20,30,5,8,13];
-
 function graphic(){
-	var svg = d3.select('body')
-				.append('svg');
 
-	var circulos = svg.selectAll('circle')
-		.data(datos)
-		.enter().append('circle');
+	var high = 960,
+		long = 1200,
+    	format = d3.format(",d"),
+    	color = d3.scaleOrdinal(d3.schemeCategory20c);
 
-	circulos.attr("cx", function(d, i){
-		return (i * 10) + 50;
-	})
-	.attr("cy", function(d, i){
-		return 100;
-	})
-	.attr("r", function(d){
-		return d
-	});
+	var bubble = d3.pack()
+    	.size([high, high])
+    	.padding(1.5);
 
-	var yRange = d3.scale.linear()
-		.range([100,0])
-		.domain([d3.min(datos, function(d){
+	var svg = d3.select("body")
+		.append("svg")
+    	.attr("width", diameter)
+	    .attr("height", diameter)
+	    .attr("class", "bubble");
+
+	d3.json("chartData.json", function(error, data){
+		var circulos = svg.selectAll('circle')
+			.data(datos)
+			.enter().append('circle');
+
+		circulos.attr("cx", function(data){
+			return (i * 10) + 50;
+		})
+		.attr("cy", function(data){
+			return 100;
+		})
+		.attr("r", function(data){
 			return d;
-		})]);
-
-	var yAxis = d3.svg.axis()
-		.scale(yRange)
-		.orient("left");
-
-	svg.append("g")
-		.attr("class", "axis")
-		.attr("transform", "translate(0, 10)")
-		.call(yAxis);
-
-
+		});
+	}
 }
