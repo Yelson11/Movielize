@@ -1,13 +1,39 @@
 <!DOCTYPE html>
-<html>
-	<head>
-		<meta charsert = "UTF-8"/>
-		<title>Movielize</title>
-	</head>
-	<body>
-		<h2>Inserte la pelicula {nombre}</h2>
-		<form action = "/">
-			<input name = "nombre" required type = "text">
-		</form>
-	</body>
+<head>
+	<title>Buscador de Películas</title>
+	<h2>MOVIELIZE</h2>
+	<label>Ingrese los datos que desea buscar:</label>
+	<style>   
+    body{ background: steelblue; font-family: Verdana ; color:white; padding: 30px;}
+    h1{font-size: 48px; text-transform:uppercase; text-align: center;}
+    input, label{margin: 8px 0;} 
+    submit {display:grid;}
+
+</style>
+</head>
+	<form action = "/search" method="get">
+		<label>Nombre:</label>
+		<input type="text" name="nombre">
+		<p></p>
+		<label>Género:</label>
+		<input type="text" name="genero">
+		<p></p>
+		<label>Actores/Actrices:</label>
+		<input type="text" name="actores">
+		<p></p>
+		<label>Rango de Años:</label>
+		<p></p>
+		<label>Inicio:</label>
+		<input type="text" name="inicio">
+		<label>  Fin:</label>
+		<input type="text" name="fin">
+		<p><input type="submit" value="Buscar"></p>
+		<p><label>------------------------------------------------------------------</label></p>
+	</form>
+	<form action = "/viewchart" method="get">
+		<label>Solicitar Gráfico Existente:</label>
+		<input type="text" name="llave">
+		<input type="submit" value="Solicitar">
+	</form>
+</body>
 </html>

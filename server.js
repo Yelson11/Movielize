@@ -1,109 +1,221 @@
-var http = require("http"),
- fs = require ("fs");
- 
-  
-http.createServer(function (req, res){
-    if (req.url.indexOf("favicon.ico") > 0) {return;}
-	fs.readFile("./index.html", function(err,html){
-	
-	var html_string = html.toString ();
-	var arreglo_parametros = [], parametros= {} ;
-	var variables=html_string.match((/[^\{\}]+(?=\})/g));
-	var nombre ="";
-	if (req.url.indexOf("?") > 0 ){
-		var url_data = req.url.split("?");
-		var arreglo_parametros = url_data[1].split("&");
-	}
-	for (var i = arreglo_parametros.length - 1; i >= 0; i--) {
-		var parametro = arreglo_parametros[i];
-		var param_data = parametro.split("=");
-		parametros[param_data[0]] = param_data[1];
-	}
-	for (var i = variables.length - 1; i >= 0; i--) {
-	 	var variable = variables[i];
-	 	html_string = html_string.replace("{"+variables[i]+"}", parametros [variable]);
-	}
+// para soportar cross domain
+var cors = require('cors')
+// servidor web
+var express = require('express');
+// para recibir y parsear content en formato json
+var bodyParser = require('body-parser');
+//Path
+var path = require('path');
+//Para encriptar
+var crypto = require("crypto");
+var key = "KeylaSanchez";
+//El hashtable
+var memory = new HashTable();
 
-	var respuesta = parametros[variable];
-	if (respuesta != null){
-		var respuesta = replaceAll(parametros[variable], "+", " ");
-		respuesta = preparateJSON(respuesta);
-		//var r = JSON.parse(respuesta);
-		var j = ReadToArray("chartData.json");
-		//console.log(search(r, j));
-	}	
-	res.writeHead (200, {"Content-Type":"text/html"})
-	res.write(html_string);
-	res.end();
-	});
 
-//JSON
-	function ReadToArray (filename) {
-    var data = JSON.parse(fs.readFileSync(filename));
-    //console.log(data);
+
+// constante para definir el puerto a ser usado
+var PORT_NUMBER = 8080;
+
+// se inicia el servidor web express
+var app = express()
+
+// iniciar el parsing de json
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+// para habilitar cross domain
+app.use(cors())
+
+// publicar contenido estatico que esta en ese folder
+app.use(express.static("D:\\Users\\Yelson\\Documents\\JS Projects\\Movilize"));
+
+app.get('/search', function(req, res){ 
+	//Hay que hacerle el get de la busqueda y mandarle al algoritmo
+	var jTitle = req.query.nombre;
+	var jGenre = req.query.genero;
+	var jActor = req.query.actores;
+	var jStar  = req.query.inicio;
+	var jEnd   = req.query.fin;
+	var json = preparateJSONsearch(jTitle, jGenre, jActor, jStar, jEnd);
+	var strJson = JSON.stringify(json);
+	console.log(strJson);
+	var publicKey = encrypt(strJson);
+	console.log(publicKey);
+	memory.setItem(publicKey, json);
+	//Hacer la función del hash
+	//codificar el json
+	//var privateKey = search();
+	//res.send("Su llave pública es: " + publicKey);
+ 	res.sendFile(path.join(__dirname + '/principal.html'));	
+});
+
+app.get('/viewchart', function(req, res){ 
+	var x = req.query.llave;
+	var c = encrypt(x);
+	var d = desencrypt(c);
+	console.log("Encriptado:" , c);
+	console.log("Desencriptado:" , d);
+	//Hacer la función del hash
+	//codificar el json
+
+ 	res.sendFile(path.join(__dirname + '/principal.html'));	
+});
+
+function preparateJSONsearch(pTitle, pGenre, pActor, pStar, pEnd){
+	var jTitle = pTitle;
+	var jGenre = pGenre;
+	var jActor = pActor;
+	var jStar  = pStar;
+	var jEnd   = pEnd;
+	if (jTitle == ''){
+		jTitle = "null";
+	}
+	if (jGenre == ''){
+		jGenre = "null";
+	}
+	if (jActor == ''){
+		jActor = "null";
+	}
+	if (jStar == ''){
+		jStar = "1900";
+	}
+	if (jEnd == ''){
+		jEnd = "2016";
+	}
+	jStar  = parseInt(jStar);
+	jEnd   = parseInt(jEnd);
+	data = {
+        title: jTitle,
+        genre: jGenre,
+        actor: jActor,
+        star: jStar,
+        end: jEnd,       
+    };
     return data;
-	};
+};
 
-	function loadFile(filepath){
-		var arrLines = [];
-		fs.stat(filepath, function(err, stat) {
-			if(err == null) {
-				arrLines = fsReadFileSynchToArray(filepath);
-			} else if(err.code == 'ENOENT') {
-				console.log('error: loading file ' + filepath + ' not found');
-			} else {
-				console.log('error: loading file', err.code);
-			}
-		});
-		return arrLines;
-	};
-
-	function getYear(pMovieName){
-		//Carga el JSON
-		var jsonObject = ReadToArray("videosdb.json");
-		for(var indexMovie in jsonObject){
-			if (pMovieName == jsonObject[indexMovie].title)			
-			console.log(jsonObject[indexMovie].title, jsonObject[indexMovie].year);
+function HashTable(obj)
+	{
+		this.length = 0;
+		this.items = {};
+		for (var p in obj) {
+		    if (obj.hasOwnProperty(p)) {
+		        this.items[p] = obj[p];
+		        this.length++;
+		    }
 		}
-	}
 
-	function replaceAll(pString, pFind, pReplace){
-    	var result = pString.split(pFind).join(pReplace);
-    	return result;
-	}
-
-	function preparateJSON(pString){
-		var result = pString.split("+").join(" ");
-		result = result.split("%7D").join("}");
-		result = result.split("%5B").join("[");
-		result = result.split("%5D").join("]");
-		result = result.split("%3A").join(":");
-		result = result.split("%22").join('"');
-		result = result.split("%2C").join(",");
-		result = result.split("%7B").join("{");
-		result = result.split("%27").join("'");
-		result = result.split("%2F").join("/");
-		result = result.split("%5C").join("/");
-		result = result.split("%3F").join("?");
-		result = result.split("%BF").join("¿");
-		result = result.split("%2B").join("+");
-		result = result.split("%26").join("&");
-		result = result.split("%21").join("!");
-		result = result.split("%A1").join("¡");
-		return result;
-	};
-
-	function search(pJsonSearch, jsonObject){
-		var jsonResult = {title: null};
-		for (var indexMovie in jsonObject){
-			if (jsonObject[indexMovie].title == pJsonSearch.title){
-
-			}
-			var newValue = pJsonSearch.title;
-				console.log(newValue);
-				jsonResult.title = newValue;
+		this.setItem = function(key, value)
+		{
+			var listMovies = [];
+		    var previous = undefined;
+		    if (this.hasItem(key)) {
+		        previous = this.items[key];
+		    }
+		    else {
+		    	this.items[key] = listMovies;
+		        this.length++;
+		    }
+		    this.items[key].push(value);
+		    return previous;
 		}
-		return jsonResult;
+
+		this.getItem = function(key) {
+		    return this.hasItem(key) ? this.items[key] : undefined;
+		}
+
+		this.hasItem = function(key)
+		{
+		    return this.items.hasOwnProperty(key);
+		}
+
+		this.removeItem = function(key)
+		{
+		    if (this.hasItem(key)) {
+		        previous = this.items[key];
+		        this.length--;
+		        delete this.items[key];
+		        return previous;
+		    }
+		    else {
+		        return undefined;
+		    }
+		}
+
+
+		this.imprimirKeys = function()
+		{
+		    var keys = [];
+		    for (var k in this.items) {
+		        if (this.hasItem(k)) {
+		            console.log(k);
+		            console.log(this.items[k]);
+		        }
+		    }
+		    return keys;
+		}
+
+		this.keys = function()
+		{
+		    var keys = [];
+		    for (var k in this.items) {
+		        if (this.hasItem(k)) {
+		            keys.push(k);
+		        }
+		    }
+		    return keys;
+		}
+
+		this.imprimirValues = function()
+		{
+		    var values = [];
+		    for (var k in this.items) {
+		        if (this.hasItem(k)) {
+		            console.log(this.items[k]);
+		        }
+		    }
+		}
+
+		this.values = function()
+		{
+		    var values = [];
+		    for (var k in this.items) {
+		        if (this.hasItem(k)) {
+		            values.push(this.items[k]);
+		            console.log(this.items[k])
+		        }
+		    }
+		    return values;
+		}
+
+		this.each = function(fn) {
+		    for (var k in this.items) {
+		        if (this.hasItem(k)) {
+		            fn(k, this.items[k]);
+		        }
+		    }
+		}
+
+		this.clear = function()
+		{
+		    this.items = {}
+		    this.length = 0;
+		}
 	};
 
-}).listen (8080);﻿
+//|------------------------------- ENCRIPTADO -------------------------------|
+function encrypt(pJson){
+	var enc = crypto.createCipher("aes-256-ctr", key).update(pJson, "utf-8", "hex");
+	return enc;
+};
+
+function desencrypt(pJson){
+	var desenc = crypto.createDecipher("aes-256-ctr", key).update(pJson, "hex", "utf-8");
+	return desenc;
+};
+
+
+// escuchar comunicacion sobre el puerto indicado en HTTP
+app.listen(PORT_NUMBER);
+console.log("Listening on port "+PORT_NUMBER)
