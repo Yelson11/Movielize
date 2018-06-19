@@ -27,8 +27,10 @@ http.createServer(function (req, res){
 	}
 	
 	var yearsHash = createHash();
-	list = searchMovie(yearsHash , 2005, 2015, 'good, Tomorrowland', 'Animation, Drama', 'Neff');
-	
+	list = searchMovie(yearsHash , 2005, 2015, 'good', 'null', 'null');
+	for (i in list){
+		console.log(list[i]);
+	}
 	res.writeHead (200, {"Content-Type":"text/html"})
 	res.write(html_string);
 	res.end();
@@ -72,15 +74,24 @@ http.createServer(function (req, res){
 		var listMovieCast = [];
 	    for (var indexYear = pStart; indexYear <= pFinal; indexYear++) {
             console.log(indexYear);
-            listGenre = commaSplit(pGenre);
-            for (var indexGenre in listGenre) { //itera sobre los generos de cada año
-            	genre = listGenre[indexGenre].toLowerCase();
-            	if (pYearsHash.items[indexYear].hasItem(genre)){
-            		var listMovieNode = pYearsHash.items[indexYear].items[genre];
-            		listMovieName = searchMovieName(pYearsHash.items[indexYear].items[genre], pName.toLowerCase(), listMovieName);
-            		listMovieCast = searchMovieCast(listMovieNode, pCast.toLowerCase(), listMovieCast);
-            	}
-	    	}
+            if (pGenre != 'null'){
+		        listGenre = commaSplit(pGenre);
+		        for (var indexGenre in listGenre) { //itera sobre los generos de cada año
+		        	genre = listGenre[indexGenre].toLowerCase();
+		        	if (pYearsHash.items[indexYear].hasItem(genre)){
+		        		var listMovieNode = pYearsHash.items[indexYear].items[genre];
+		        		listMovieName = searchMovieName(pYearsHash.items[indexYear].items[genre], pName.toLowerCase(), listMovieName);
+		        		listMovieCast = searchMovieCast(listMovieNode, pCast.toLowerCase(), listMovieCast);
+		        	}
+		    	}
+		    }
+		    else{
+		    	for (var indexGenre in pYearsHash.items[indexYear].items) { //itera sobre los generos de cada año
+		        	var listMovieNode = pYearsHash.items[indexYear].items[indexGenre];
+		        	listMovieName = searchMovieName(pYearsHash.items[indexYear].items[indexGenre], pName.toLowerCase(), listMovieName);
+		        	listMovieCast = searchMovieCast(listMovieNode, pCast.toLowerCase(), listMovieCast);
+		    	}
+		    }
 	    }
 	    listMovie = intersectionMovies(listMovieName, listMovieCast);
 	    return listMovie;
@@ -98,32 +109,40 @@ http.createServer(function (req, res){
 
 	function searchMovieName(pListMovies, pListMoviesName, lista){
 		for (var indexMovie in pListMovies) {
-			listMovieName = commaSplit(pListMoviesName);
-			for (indexMovieName in listMovieName)
-			{
-				movieName = pListMovies[indexMovie].title.toLowerCase();
-				if (movieName.indexOf(listMovieName[indexMovieName]) > 0 && !lista.includes(pListMovies[indexMovie])){
-					lista.push(pListMovies[indexMovie]);
-				}	
+			if (pListMoviesName != 'null'){
+				listMovieName = commaSplit(pListMoviesName);
+				for (indexMovieName in listMovieName)
+				{
+					movieName = pListMovies[indexMovie].title.toLowerCase();
+					if (movieName.indexOf(listMovieName[indexMovieName]) > 0 && !lista.includes(pListMovies[indexMovie])){
+						lista.push(pListMovies[indexMovie]);
+					}	
+				}
 			}
+			else
+				lista.push(pListMovies[indexMovie]);
 		}
 		return lista;
 	}	
 
-	function searchMovieCast(pListMovies, pActor, lista1){
+	function searchMovieCast(pListMovies, pActor, lista){
 		for (var indexMovie in pListMovies) {		
-			listMovieCast = commaSplit(pActor);		
-			for (indexMovieCast in listMovieCast)
-			{
-				if (pListMovies[indexMovie].cast != null){
-					movieCast = pListMovies[indexMovie].cast.toLowerCase();
-					if (movieCast.indexOf(listMovieCast[indexMovieCast]) > 0 && !lista1.includes(pListMovies[indexMovie])){
-						lista1.push(pListMovies[indexMovie]);
-					}
-				}	
+			if (pActor != 'null'){
+				listMovieCast = commaSplit(pActor);		
+				for (indexMovieCast in listMovieCast)
+				{
+					if (pListMovies[indexMovie].cast != null){
+						movieCast = pListMovies[indexMovie].cast.toLowerCase();
+						if (movieCast.indexOf(listMovieCast[indexMovieCast]) > 0 && !lista.includes(pListMovies[indexMovie])){
+							lista.push(pListMovies[indexMovie]);
+						}
+					}	
+				}
 			}
+			else
+				lista.push(pListMovies[indexMovie]);
 		}
-		return lista1;
+		return lista;
 	}
 
 	function HashTable(obj)
